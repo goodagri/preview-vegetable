@@ -29,6 +29,7 @@ s3 = boto3.client('s3',
                   )
 
 
+
 def latest_image_path(store_name, bucket_name):
     dt = datetime.datetime.now()
     prefix = store_name + dt.strftime("/%Y/%m/%d/")
@@ -60,13 +61,18 @@ def clear_upload_images():
     LatestImagePaths = get_latest_image_paths(stores, bucket_name)
     download_image(LatestImagePaths)
 
-def main():
-    images = glob("./latest_images/"+ "*.jpg")
+@st.cache
+def read_image(images):
+    pil_imgs = []
     for i, image in enumerate(images):
-        st.write("端末名：",stores[i])
         pil_img = Image.open(image)
-        st.image(pil_img, caption=image.split("/")[-1])
+        pil_imgs.append(pil_img)
+    return pil_imgs
 
+def main(images, Pil_Images):
+    for i, image in enumerate(Pil_Images):
+        st.write("端末名：",stores[i])
+        st.image(image, caption=images[i].split("/")[-1])
 
 uppdate_button = st.button("最新画像に更新")
 
@@ -77,4 +83,6 @@ if uppdate_button:
     state.success("更新完了")
     time.sleep(0.5)
 
-main()
+images = glob("./latest_images/"+ "*.jpg")
+Pil_Images = read_image(images)
+main(images, Pil_Images)
