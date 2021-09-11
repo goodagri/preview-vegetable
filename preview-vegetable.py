@@ -45,22 +45,28 @@ def download_image(latest_images):
         except:
             st.error(latest_image.split("/")[0]+"の画像をダウンロードできませんでした")
 
+@st.cache()
+def read_image():    
+    img1 = Image.open("./latest_images/"+latest_image1.split("/")[-1])  
+    img2 = Image.open("./latest_images/"+latest_image2.split("/")[-1])  
+    return img1, img2
+
 
 latest_image1 = latest_image_path("aeon_rifu_1", "vegi-upload-images")
 latest_image2 = latest_image_path("aeon_rifu_2", "vegi-upload-images")
 latest_images = latest_image1, latest_image2
 
-
 download_image(latest_images)
 
 
+img1, img2 = read_image()
 
 st.write(latest_image1.split("/")[0])
-img1 = Image.open("./latest_images/"+latest_image1.split("/")[-1])  
 st.image(img1, caption=latest_image1.split("/")[-1])
 
 st.write(latest_image2.split("/")[0])
-img2 = Image.open("./latest_images/"+latest_image2.split("/")[-1])  
 st.image(img2, caption=latest_image2.split("/")[-1])
 
 
+
+    
