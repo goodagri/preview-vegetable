@@ -20,8 +20,8 @@ ____
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vegi-upload-images')
 s3 = boto3.client('s3',
-                  aws_access_key_id="aws_access_key_id",
-                  aws_secret_access_key="aws_secret_access_key",
+                  aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
+                  aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"],
                   region_name='ap-northeast-1'
                   )
 
@@ -64,5 +64,3 @@ img2 = Image.open("./latest_images/"+latest_image2.split("/")[-1])
 st.image(img2, caption=latest_image2.split("/")[-1])
 
 
-
-    
