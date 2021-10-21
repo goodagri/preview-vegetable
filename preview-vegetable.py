@@ -13,21 +13,16 @@ st.set_page_config(
 )
 
 """
-# 🍅ベジデジ
+# 🍅デジベジ
 ## 現場最新画像閲覧システム
 ____
 """
-stores = ["aeon_rifu_1","aeon_rifu_2"]
+stores = ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
 bucket_name = "vegi-upload-images"
 
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vegi-upload-images')
-s3 = boto3.client('s3',
-                  aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
-                  aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"],
-                  region_name='ap-northeast-1'
-                  )
-
+s3 = boto3.client('s3')
 
 
 def latest_image_path(store_name, bucket_name):
@@ -55,7 +50,7 @@ def download_image(latest_images):
         try:
             s3.download_file(bucket_name, latest_image, "./latest_images/"+latest_image.split("/")[-1])
         except:
-            st.error(latest_image.split("/")[0]+"の画像をダウンロードできませんでした")
+            st.error("本日の画像をダウンロードできませんでした")
 
 def clear_upload_images():    
     LatestImagePaths = get_latest_image_paths(stores, bucket_name)
@@ -71,8 +66,11 @@ def read_image(images):
 
 def main(images, Pil_Images):
     for i, image in enumerate(Pil_Images):
-        st.write("端末名：",stores[i])
+        st.markdown("## 端末："+stores[i])
+        time = images[i].split("/")[-1].split(".")[0].split("_")
+        st.markdown("#### 📷撮影時刻："+time[0]+"年"+time[1][:2]+"月"+time[1][2:]+"日"+time[2][:2]+"時"+time[2][2:4]+"分")
         st.image(image, caption=images[i].split("/")[-1])
+        st.markdown("___")
 
 uppdate_button = st.button("最新画像に更新")
 
@@ -81,7 +79,6 @@ if uppdate_button:
     state.write("最新の売り場画像に更新しています....")
     clear_upload_images()
     state.success("更新完了")
-    time.sleep(0.5)
 
 images = glob("./latest_images/"+ "*.jpg")
 Pil_Images = read_image(images)
