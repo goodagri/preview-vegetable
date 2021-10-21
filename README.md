@@ -12,7 +12,7 @@ $ pip install -r requirements.txt
 $ aws configure
 ```
 
-## Setup
+## Run streamlit app
 
 ```bash
 # run streamlit
