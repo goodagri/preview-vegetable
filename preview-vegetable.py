@@ -18,8 +18,8 @@ st.set_page_config(
 ____
 """
 stores = ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
-bucket_name = "vegi-upload-images"
 
+bucket_name = "vegi-upload-images"
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vegi-upload-images')
 s3 = boto3.client('s3')
