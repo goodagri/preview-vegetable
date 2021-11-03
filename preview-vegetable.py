@@ -18,11 +18,6 @@ st.set_page_config(
 ## 現場最新画像閲覧システム
 ____
 """
-stores = st.multiselect(
-    "端末を選ぶ",
-    ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"],
-    ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
-    )
     
 bucket_name = "vegi-upload-images"
 
@@ -70,6 +65,14 @@ def read_image(images):
         pil_imgs.append(pil_img)
     return pil_imgs
 
+@st.cache
+def get_device_list(bucket_name=bucket_name):
+    result = bucket.meta.client.list_objects(Bucket=bucket_name, Delimiter='/')
+    device_list = []
+    for o in result.get('CommonPrefixes'):
+        device_list.append(o.get('Prefix').split("/")[0])
+    return device_list
+
 def main(images, Pil_Images, stores):
     for i, image in enumerate(images):
         st.markdown("## 端末："+image.split("/")[-1].split(".")[0].split("_")[0])
@@ -79,6 +82,26 @@ def main(images, Pil_Images, stores):
         st.markdown("___")
 
 uppdate_button = st.button("最新画像に更新")
+device_list = get_device_list()
+stores = st.multiselect(
+    "端末を選ぶ",
+    device_list,
+    ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
+    )
+
+# with st.form(key='my_form'):
+
+#     stores = st.multiselect(
+#         "端末を選ぶ",
+#         device_list,
+#         ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
+#         )
+# 	submit_button = st.form_submit_button('Submit')
+
+# if submit_button:
+#     with open("./devices.json", "w") as f:
+#         devices_dict = {"device":device_list}
+#         json.dump(devices_dict, f)
 
 if uppdate_button:
     state = st.empty()
