@@ -23,8 +23,12 @@ stores = ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
 bucket_name = "vegi-upload-images"
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vegi-upload-images')
-s3 = boto3.client('s3')
 
+s3 = boto3.client('s3',
+                  aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
+                  aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"],
+                  region_name='ap-northeast-1'
+                  )
 
 def latest_image_path(store_name, bucket_name):
     dt = datetime.datetime.now()
