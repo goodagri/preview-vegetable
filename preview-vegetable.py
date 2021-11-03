@@ -14,8 +14,6 @@ st.set_page_config(
 )
 
 
-stores = ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
-
 bucket_name = "vegi-upload-images"
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vegi-upload-images')
@@ -104,9 +102,9 @@ def main(images, Pil_Images):
     ____
     """
     stores = st.multiselect(
-    "端末を選ぶ",
-    device_list,
-    ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
+        "端末を選ぶ",
+        device_list,
+        ["aeon_rifu_1","aeon_rifu_2", "aeon_rifu_3", "aeon_rifu_4"]
     )
     uppdate_button = st.button("最新画像に更新")
     if uppdate_button:
