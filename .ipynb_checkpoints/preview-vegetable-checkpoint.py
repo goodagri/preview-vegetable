@@ -58,11 +58,11 @@ def latest_image_path(store_name, bucket_name):
     else:
         return 0
         
-def get_latest_image_paths(devices, bucket_name):
+def get_latest_image_paths(stores, bucket_name):
     latest_image_dict = {}
-    for device in devices:
-        latest_image = latest_image_path(device, bucket_name)
-        latest_image_dict[device] = latest_image
+    for store in stores:
+        latest_image = latest_image_path(store, bucket_name)
+        latest_image_dict[store] = latest_image
     return latest_image_dict
 
 def download_image(latest_image_dict):
@@ -75,8 +75,8 @@ def download_image(latest_image_dict):
         except:
             st.error(f"本日の{store_name}の画像をダウンロードできませんでした")
 
-def clear_upload_images(devices):    
-    latest_image_dict = get_latest_image_paths(devices, bucket_name=bucket_name)
+def clear_upload_images(stores):    
+    latest_image_dict = get_latest_image_paths(stores, bucket_name=bucket_name)
     download_image(latest_image_dict)
 
 @st.cache
@@ -95,7 +95,7 @@ def get_device_list(bucket_name=bucket_name):
         device_list.append(o.get('Prefix').split("/")[0])
     return device_list
 
-def main(images, Pil_Images, devices):
+def main(images, Pil_Images):
     """
     # 🍅デジベジ
     ## 現場最新画像閲覧システム
@@ -104,7 +104,7 @@ def main(images, Pil_Images, devices):
     if st.button("最新画像に更新"):
         state = st.empty()
         state.write("最新の売り場画像に更新しています....")
-        clear_upload_images(devices)
+        clear_upload_images(stores)
         state.success("更新完了")
 
     for i, image in enumerate(images):
@@ -122,7 +122,7 @@ def setting_form():
         if os.path.exists("./settings/device_settings.json"):
             with open("./settings/device_settings.json", "r") as f:
                 watch_devices_dict = json.load(f)
-            watch_device_list = watch_devices_dict['devices']
+            watch_devices_list = watch_devices_dict('devices')
         else:
             watch_device_list = total_device_list
         devices = st.multiselect(            
@@ -135,8 +135,10 @@ def setting_form():
         new_watch_devices_dict = {'devices': devices}
         with open("./settings/device_settings.json", "w") as f:
             json.dump(new_watch_devices_dict, f)
-    return devices
 
+
+
+device_list = get_device_list()
 
 
 login_blocks = generate_login_block()
@@ -146,8 +148,8 @@ if is_authenticated(password):
     clean_blocks(login_blocks)
     images = glob("./latest_images/"+ "*.jpg")
     Pil_Images = read_image(images)
-    devices = setting_form()
-    main(images, Pil_Images, devices)
+    setting_form()
+    main(images, Pil_Images)
 
 elif password:
     st.info("正しいパスワードを入力してください")
