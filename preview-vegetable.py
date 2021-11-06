@@ -133,6 +133,8 @@ def setting_form():
         submit_button = st.form_submit_button(label='設定変更')
     if submit_button:
         new_watch_devices_dict = {'devices': devices}
+        if not os.path.exists('settings'):
+            os.mkdir('settings')
         with open("./settings/device_settings.json", "w") as f:
             json.dump(new_watch_devices_dict, f)
     return devices
