@@ -96,11 +96,6 @@ def get_device_list(bucket_name=bucket_name):
     return device_list
 
 def main(images, Pil_Images, devices):
-    """
-    # 🍅デジベジ
-    ## 現場最新画像閲覧システム
-    ____
-    """    
     if st.button("最新画像に更新"):
         state = st.empty()
         state.write("最新の売り場画像に更新しています....")
@@ -145,6 +140,11 @@ login_blocks = generate_login_block()
 password = login(login_blocks)
 
 if is_authenticated(password):
+    """
+    # 🍅デジベジ
+    ## 現場最新画像閲覧システム
+    ____
+    """    
     clean_blocks(login_blocks)
     images = glob("./latest_images/"+ "*.jpg")
     Pil_Images = read_image(images)
