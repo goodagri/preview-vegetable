@@ -87,7 +87,7 @@ def read_image(images):
         pil_imgs.append(pil_img)
     return pil_imgs
 
-@st.cache
+
 def get_device_list(bucket_name=bucket_name):
     result = bucket.meta.client.list_objects(Bucket=bucket_name, Delimiter='/')
     device_list = []
