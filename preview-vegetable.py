@@ -95,7 +95,7 @@ def get_device_list(bucket_name=bucket_name):
     result = bucket.meta.client.list_objects(Bucket=bucket_name, Delimiter='/')
     device_list = []
     for o in result.get('CommonPrefixes'):
-        device_list.append(o.get('Prefix').split("/")[1])
+        device_list.append(o.get('Prefix').split("/")[0])
     return device_list
 
 def main(images, Pil_Images, devices):
