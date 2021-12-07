@@ -13,10 +13,13 @@ st.set_page_config(
     page_icon='🍅',
 )
 
+"""
+# AE-000001
+"""
 
-bucket_name = "vegi-upload-images"
+bucket_name = "vege-upload-images"
 s3 = boto3.resource('s3')
-bucket = s3.Bucket('vegi-upload-images')
+bucket = s3.Bucket('vege-upload-images')
 
 s3 = boto3.client('s3',
                   aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
@@ -48,9 +51,9 @@ def login(blocks):
 
     return blocks[1].text_input("パスワードを入力してください", help="わすれた場合はokomeに聞いてください", value="", type="password")
 
-def latest_image_path(store_name, bucket_name):
+def latest_image_path(device_name, bucket_name):
     dt = datetime.datetime.now()
-    prefix = store_name + dt.strftime("/%Y/%m/%d/")
+    prefix = "AE-000001" + device_name + dt.strftime("/%Y/%m/%d/")
     response = s3.list_objects(Bucket=bucket_name, Prefix=prefix)
     if "Contents" in response:
         contents = response["Contents"][-1]
@@ -92,7 +95,7 @@ def get_device_list(bucket_name=bucket_name):
     result = bucket.meta.client.list_objects(Bucket=bucket_name, Delimiter='/')
     device_list = []
     for o in result.get('CommonPrefixes'):
-        device_list.append(o.get('Prefix').split("/")[0])
+        device_list.append(o.get('Prefix').split("/")[1])
     return device_list
 
 def main(images, Pil_Images, devices):
