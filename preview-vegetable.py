@@ -95,7 +95,7 @@ def get_device_list(bucket_name=bucket_name):
     result = bucket.meta.client.list_objects(Bucket=bucket_name, Delimiter='/')
     device_list = []
     for o in result.get('CommonPrefixes'):
-        device_list.append(o.get('Prefix').split("/")[0])
+        device_list.append(o.get('Prefix').split("/")[1])
     return device_list
 
 def main(images, Pil_Images, devices):
@@ -117,6 +117,7 @@ def setting_form():
     with st.form(key='my_form'):
         st.write("設定")
         total_device_list = get_device_list()
+        print(total_device_list)
         if os.path.exists("./settings/device_settings.json"):
             with open("./settings/device_settings.json", "r") as f:
                 watch_devices_dict = json.load(f)
