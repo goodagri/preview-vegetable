@@ -117,7 +117,7 @@ def setting_form():
     with st.form(key='my_form'):
         st.write("設定")
         total_device_list = get_device_list()
-        print(total_device_list)
+        st.write(total_device_list)
         if os.path.exists("./settings/device_settings.json"):
             with open("./settings/device_settings.json", "r") as f:
                 watch_devices_dict = json.load(f)
