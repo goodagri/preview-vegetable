@@ -1,3 +1,4 @@
 *.jpg
 .streamlit/
 *.ipynb
+.ipynb_checkpoints
