@@ -14,18 +14,24 @@ st.set_page_config(
 )
 
 """
-# AE-000001
+# AE01-Wb5qCH
 """
 
 bucket_name = "vege-upload-images"
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vege-upload-images')
 
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('dev-digivege-store-table')
+GSI_NAME = 'dev-digivege-store-status-gsi'
+
 s3 = boto3.client('s3',
                   aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
                   aws_secret_access_key=st.secrets["AWS_SECRET_ACCESS_KEY"],
                   region_name='ap-northeast-1'
                   )
+
+store_name = "AE01-Wb5qCH"
 
 def is_authenticated(password):
     return password == st.secrets["PRE_PASSWORD"]
@@ -51,9 +57,9 @@ def login(blocks):
 
     return blocks[1].text_input("パスワードを入力してください", help="わすれた場合はokomeに聞いてください", value="", type="password")
 
-def latest_image_path(device_name, bucket_name):
-    dt = datetime.datetime.now()
-    prefix = "AE-000001" + device_name + dt.strftime("/%Y/%m/%d/")
+def latest_image_path(store_name, device_name, bucket_name, dt):
+    prefix = store_name +"/"+ device_name + dt.strftime("/%Y/%m/%d/")
+    st.write(prefix)
     response = s3.list_objects(Bucket=bucket_name, Prefix=prefix)
     if "Contents" in response:
         contents = response["Contents"][-1]
@@ -61,10 +67,10 @@ def latest_image_path(device_name, bucket_name):
     else:
         return 0
         
-def get_latest_image_paths(devices, bucket_name):
+def get_latest_image_paths(devices, bucket_name, dt):
     latest_image_dict = {}
     for device in devices:
-        latest_image = latest_image_path(device, bucket_name)
+        latest_image = latest_image_path(store_name, device, bucket_name, dt)
         latest_image_dict[device] = latest_image
     return latest_image_dict
 
@@ -78,8 +84,8 @@ def download_image(latest_image_dict):
         except:
             st.error(f"本日の{store_name}の画像をダウンロードできませんでした")
 
-def clear_upload_images(devices):    
-    latest_image_dict = get_latest_image_paths(devices, bucket_name=bucket_name)
+def clear_upload_images(devices, dt):    
+    latest_image_dict = get_latest_image_paths(devices, bucket_name=bucket_name, dt=dt)
     download_image(latest_image_dict)
 
 @st.cache
@@ -90,34 +96,33 @@ def read_image(images):
         pil_imgs.append(pil_img)
     return pil_imgs
 
-
-def get_device_list(bucket_name=bucket_name):
-    result = bucket.meta.client.list_objects(Bucket=bucket_name, Delimiter='/')
-    device_list = []
-    for o in result.get('CommonPrefixes'):
-        device_list.append(o.get('Prefix').split("/")[1])
+@st.cache
+def get_device_list(store_name):
+    device_list = table.get_item(Key={"id": store_name, "usage": "sensors"})["Item"]["sensors"]
     return device_list
 
-def main(images, Pil_Images, devices):
+def display_images(images):
+    for i, image in enumerate(images):
+        time = images[i].split("/")[-1].split(".")[0].split("-")
+        st.markdown("## 端末："+time[2])
+        st.markdown("#### 📷撮影時刻："+time[3]+"年"+time[4][:2]+"月"+time[4][2:]+"日"+time[5][:2]+"時"+time[5][2:]+"分")
+        st.image(Pil_Images[i], caption=images[i].split("/")[-1])
+        st.markdown("___")
+
+def main(images, Pil_Images, devices, dt):
     if st.button("最新画像に更新"):
         state = st.empty()
         state.write("最新の売り場画像に更新しています....")
-        clear_upload_images(devices)
+        clear_upload_images(devices, dt)
         state.success("更新完了")
 
-    for i, image in enumerate(images):
-        st.markdown("## 端末："+image.split("/")[-1].split(".")[0].split("_")[0])
-        time = images[i].split("/")[-1].split(".")[0].split("_")[1:]
-        st.markdown("#### 📷撮影時刻："+time[0]+"年"+time[1][:2]+"月"+time[1][2:]+"日"+time[2][:2]+"時"+time[2][2:4]+"分")
-        st.image(Pil_Images[i], caption=images[i].split("/")[-1])
-        st.markdown("___")
+    display_images(images)
 
 def setting_form():
     # Using the "with" syntax
     with st.form(key='my_form'):
         st.write("設定")
-        total_device_list = get_device_list()
-        st.write(total_device_list)
+        total_device_list = get_device_list(store_name)
         if os.path.exists("./settings/device_settings.json"):
             with open("./settings/device_settings.json", "r") as f:
                 watch_devices_dict = json.load(f)
@@ -125,10 +130,13 @@ def setting_form():
         else:
             watch_device_list = total_device_list
         devices = st.multiselect(            
-            "端末を選ぶ",
+            "端末",
             total_device_list,
             watch_device_list
         )
+        dt = st.date_input(
+            "日時",
+            datetime.datetime.now())
         submit_button = st.form_submit_button(label='設定変更')
     if submit_button:
         new_watch_devices_dict = {'devices': devices}
@@ -136,14 +144,15 @@ def setting_form():
             os.mkdir('settings')
         with open("./settings/device_settings.json", "w") as f:
             json.dump(new_watch_devices_dict, f)
-    return devices
+    return devices ,dt
 
 
 
 login_blocks = generate_login_block()
 password = login(login_blocks)
 
-if is_authenticated(password):
+# if is_authenticated(password):
+if True:
     """
     # 🍅デジベジ
     ## 現場最新画像閲覧システム
@@ -152,8 +161,8 @@ if is_authenticated(password):
     clean_blocks(login_blocks)
     images = glob("./latest_images/"+ "*.jpg")
     Pil_Images = read_image(images)
-    devices = setting_form()
-    main(images, Pil_Images, devices)
+    devices,dt = setting_form()
+    main(images, Pil_Images, devices, dt)
 
 elif password:
     st.info("正しいパスワードを入力してください")
