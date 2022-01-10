@@ -158,8 +158,7 @@ def setting_form():
 login_blocks = generate_login_block()
 password = login(login_blocks)
 
-# if is_authenticated(password):
-if True:
+if is_authenticated(password):
     clean_blocks(login_blocks)
     main()
 
