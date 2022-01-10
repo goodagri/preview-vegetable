@@ -14,9 +14,11 @@ st.set_page_config(
 )
 
 """
-# AE01-Wb5qCH
-"""
-
+# 🍅デジベジ
+## 現場最新画像閲覧システム
+### 店舗：AE01-Wb5qCH
+____
+"""    
 
 
 bucket_name = "vege-upload-images"
@@ -60,7 +62,6 @@ def login(blocks):
 
 def latest_image_path(store_name, device_name, bucket_name, dt):
     prefix = store_name +"/"+ device_name + dt.strftime("/%Y/%m/%d/")
-    st.write(prefix)
     response = s3.list_objects(Bucket=bucket_name, Prefix=prefix)
     if "Contents" in response:
         contents = response["Contents"][-1]
@@ -102,7 +103,7 @@ def get_device_list(store_name):
     device_list = table.get_item(Key={"id": store_name, "usage": "sensors"})["Item"]["sensors"]
     return device_list
 
-def display_images(images):
+def display_images(images, Pil_Images):
     for i, image in enumerate(images):
         time = images[i].split("/")[-1].split(".")[0].split("-")
         st.markdown("## 端末："+time[2])
@@ -110,14 +111,18 @@ def display_images(images):
         st.image(Pil_Images[i], caption=images[i].split("/")[-1])
         st.markdown("___")
 
-def main(images, Pil_Images, devices, dt):
+def main():
+
+    images = glob("./latest_images/"+ "*.jpg")
+    Pil_Images = read_image(images)
+    devices,dt = setting_form()
     if st.button("最新画像に更新"):
         state = st.empty()
         state.write("最新の売り場画像に更新しています....")
         clear_upload_images(devices, dt)
         state.success("更新完了")
 
-    display_images(images)
+    display_images(images, Pil_Images)
 
 def setting_form():
     # Using the "with" syntax
@@ -145,6 +150,7 @@ def setting_form():
             os.mkdir('settings')
         with open("./settings/device_settings.json", "w") as f:
             json.dump(new_watch_devices_dict, f)
+        clear_upload_images(devices, dt)
     return devices ,dt
 
 
@@ -154,16 +160,8 @@ password = login(login_blocks)
 
 # if is_authenticated(password):
 if True:
-    """
-    # 🍅デジベジ
-    ## 現場最新画像閲覧システム
-    ____
-    """    
     clean_blocks(login_blocks)
-    images = glob("./latest_images/"+ "*.jpg")
-    Pil_Images = read_image(images)
-    devices,dt = setting_form()
-    main(images, Pil_Images, devices, dt)
+    main()
 
 elif password:
     st.info("正しいパスワードを入力してください")
