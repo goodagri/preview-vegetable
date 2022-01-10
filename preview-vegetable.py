@@ -17,13 +17,14 @@ st.set_page_config(
 # AE01-Wb5qCH
 """
 
+
+
 bucket_name = "vege-upload-images"
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vege-upload-images')
 
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('dev-digivege-store-table')
-GSI_NAME = 'dev-digivege-store-status-gsi'
+dynamodb = boto3.resource('dynamodb', )
+table = dynamodb.Table('dev-digivege-store-table', region_name='ap-northeast-1')
 
 s3 = boto3.client('s3',
                   aws_access_key_id=st.secrets["AWS_ACCESS_KEY_ID"],
