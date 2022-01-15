@@ -16,11 +16,10 @@ st.set_page_config(
 """
 # 🍅デジベジ
 ## 現場最新画像閲覧システム
-### 店舗：AE01-Wb5qCH
 ____
 """    
 
-
+# AWS settings
 bucket_name = "vege-upload-images"
 s3 = boto3.resource('s3')
 bucket = s3.Bucket('vege-upload-images')
@@ -34,7 +33,7 @@ s3 = boto3.client('s3',
                   region_name='ap-northeast-1'
                   )
 
-store_name = "AE01-Wb5qCH"
+
 
 def is_authenticated(password):
     return password == st.secrets["PRE_PASSWORD"]
@@ -42,8 +41,9 @@ def is_authenticated(password):
 def generate_login_block():
     block1 = st.empty()
     block2 = st.empty()
+    block3 = st.empty()
 
-    return block1, block2
+    return block1, block2, block3
 
 def clean_blocks(blocks):
     for block in blocks:
@@ -58,7 +58,7 @@ def login(blocks):
             </style>
         """, unsafe_allow_html=True)
 
-    return blocks[1].text_input("パスワードを入力してください", help="わすれた場合はokomeに聞いてください", value="", type="password")
+    return blocks[1].selectbox("店舗",("AE01-Wb5qCH",)), blocks[2].text_input("パスワードを入力してください", help="わすれた場合はokomeに聞いてください", value="", type="password")
 
 def latest_image_path(store_name, device_name, bucket_name, dt):
     prefix = store_name +"/"+ device_name + dt.strftime("/%Y/%m/%d/")
@@ -107,8 +107,7 @@ def display_images(images, Pil_Images):
     for i, image in enumerate(images):
         time = images[i].split("/")[-1].split(".")[0].split("-")
         st.markdown("## 端末："+time[2])
-        st.markdown("#### 📷撮影時刻："+time[3]+"年"+time[4][:2]+"月"+time[4][2:]+"日"+time[5][:2]+"時"+time[5][2:]+"分")
-        st.image(Pil_Images[i], caption=images[i].split("/")[-1])
+        st.image(Pil_Images[i], caption="📷撮影時刻："+time[3]+"年"+time[4][:2]+"月"+time[4][2:]+"日"+time[5][:2]+"時"+time[5][2:]+"分")
         st.markdown("___")
 
 def main():
@@ -156,7 +155,7 @@ def setting_form():
 
 
 login_blocks = generate_login_block()
-password = login(login_blocks)
+store_name, password = login(login_blocks)
 
 if is_authenticated(password):
     clean_blocks(login_blocks)
